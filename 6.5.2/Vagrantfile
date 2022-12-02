@@ -1,0 +1,36 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+
+
+  config.vm.define "db" do |db|
+    db.vm.hostname = "Ubuntu-2210"
+    config.vm.box = 'ubuntu-2210'
+    config.vm.define "postgres8.4"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+     sudo apt-get update && sudo apt-get -y install wget make gcc libreadline-dev zlib1g-dev
+    wget -q https://ftp.postgresql.org/pub/source/v8.4.22/postgresql-8.4.22.tar.gz
+    gunzip postgresql-8.4.22.tar.gz
+    tar -xf postgresql-8.4.22.tar
+    cd postgresql-8.4.22
+    ./configure
+    sudo make
+    sudo make install
+    sudo useradd -M postgres
+    sudo mkdir -p /var/lib/pgsql/data
+    sudo chown -R postgres:postgres /var/lib/pgsql
+    sudo runuser -l postgres -c '/usr/local/pgsql/bin/initdb -D /var/lib/pgsql/data/'
+    sudo runuser -l postgres -c '/usr/local/pgsql/bin/pg_ctl -D /var/lib/pgsql/data/ -l logfile start'
+  SHELL
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
+  end
+end

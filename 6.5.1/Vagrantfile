@@ -1,0 +1,54 @@
+# -*- mode: ruby -*-
+# vi: set ft=ruby :
+
+# All Vagrant configuration is done below. The "2" in Vagrant.configure
+# configures the configuration version (we support older styles for
+# backwards compatibility). Please don't change it unless you know what
+# you're doing.
+Vagrant.configure("2") do |config|
+
+
+  config.vm.define "db" do |db|
+#     db.vm.hostname = "Ubuntu-2210"
+    config.vm.box = 'ubuntu1604'
+#     config.vm.box_url = 'https://app.vagrantup.com/generic/boxes/ubuntu2210/versions/4.2.4/providers/virtualbox.box'
+#    config.vm.define "Postgres8.4.22"
+  end
+
+  config.vm.provision "shell", inline: <<-SHELL
+     sudo apt-get update && sudo apt-get -y install wget make gcc libreadline-dev zlib1g-dev
+    wget -q https://ftp.postgresql.org/pub/source/v8.4.22/postgresql-8.4.22.tar.gz
+    gunzip postgresql-8.4.22.tar.gz
+    tar -xf postgresql-8.4.22.tar
+    cd postgresql-8.4.22
+    ./configure
+    sudo make
+    sudo make install
+    sudo useradd -M postgres
+    sudo mkdir -p /var/lib/pgsql/data
+    sudo chown -R postgres:postgres /var/lib/pgsql
+    sudo runuser -l postgres -c '/usr/local/pgsql/bin/initdb -D /var/lib/pgsql/data/'
+    sudo runuser -l postgres -c '/usr/local/pgsql/bin/pg_ctl -D /var/lib/pgsql/data/ -l logfile start'
+
+#     apt-get update
+#     curl https://www.postgresql.org/media/keys/ACCC4CF8.asc | gpg --dearmor | sudo tee /etc/apt/trusted.gpg.d/apt.postgresql.org.gpg >/dev/null
+#     sudo sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+#     sudo apt update
+#     sudo DEBIAN_FRONTEND=noninteractive apt-get -yq install postgresql-8.4
+#     sudo useradd postgres -p postgres -U -m
+#     sudo mkdir /usr/local/pgsql/data
+#     chown postgres /usr/local/pgsql/data
+#     su - postgres
+# #     https://www.postgresql.org/docs/8.4/install-procedure.html
+#     /usr/local/pgsql/bin/initdb -D /usr/local/pgsql/data
+#     /usr/local/pgsql/bin/postgres -D /usr/local/pgsql/data >logfile 2>&1 &
+#     /usr/local/pgsql/bin/createdb test
+#     /usr/local/pgsql/bin/psql test
+#     apt-get install apache2 -y
+#     source $HOME/.bash_profile
+  SHELL
+
+  config.vm.provider "virtualbox" do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "2048"]
+  end
+end
